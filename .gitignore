@@ -1,0 +1,22 @@
+# Environment & Secrets
+.env
+
+# Dependencies
+node_modules/
+.dart_tool/
+.packages
+
+# Build outputs
+dist/
+build/
+*.class
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# IDE & OS
+.DS_Store
+.idea/
+.vscode/
+*.iml
