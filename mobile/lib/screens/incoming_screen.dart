@@ -1,425 +1,242 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../core/theme.dart';
-import '../core/api_service.dart';
+import 'scan_result_screen.dart';
 
 class IncomingScreen extends StatefulWidget {
-  const IncomingScreen({super.key});
+  final bool showBackButton;
+  const IncomingScreen({super.key, this.showBackButton = true});
 
   @override
   State<IncomingScreen> createState() => _IncomingScreenState();
 }
 
 class _IncomingScreenState extends State<IncomingScreen> {
-  final _currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
-  bool _isLoading = true;
-  String? _error;
-  List<dynamic> _invoices = [];
-  List<dynamic> _schedules = [];
+  int _selectedMode = 1; // 0 = Manual, 1 = Scan Bon / Faktur
 
   @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final invoices = await ApiService.instance.getInvoices();
-      final schedules = await ApiService.instance.getSchedules();
-
-      if (mounted) {
-        setState(() {
-          _invoices = invoices;
-          _schedules = schedules;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString().replaceAll('Exception: ', '');
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  void _showReceiptDialog(Map<String, dynamic> schedule) {
-    final invoice = schedule['invoice'] ?? {};
-    final items = (invoice['items'] as List? ?? []);
-
-    final qtyControllers = <String, TextEditingController>{};
-    for (final it in items) {
-      final variantId = it['variantId'] ?? it['id'];
-      final conv = (it['conversionFactor'] as num? ?? 1).toDouble();
-      final expectedPcs = ((it['quantity'] as num? ?? 1) * conv).toInt();
-      qtyControllers[variantId] = TextEditingController(text: expectedPcs.toString());
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.inventory_outlined, color: AppColors.accent),
-            const SizedBox(width: 8),
-            Text(
-              'Terima Barang: ${invoice['internalNumber'] ?? ''}',
-              style: const TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              Text(
-                'Supplier: ${invoice['supplier']?['name'] ?? '-'}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Periksa jumlah fisik barang (dalam pcs):',
-                style: TextStyle(fontSize: 12, color: AppColors.mutedForeground),
-              ),
-              const SizedBox(height: 12),
-              ...items.map((it) {
-                final variantId = it['variantId'] ?? it['id'];
-                final variant = it['variant'] ?? {};
-                final product = variant['product'] ?? {};
-                final conv = (it['conversionFactor'] as num? ?? 1).toDouble();
-                final expectedPcs = ((it['quantity'] as num? ?? 1) * conv).toInt();
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        it['rawName'] ?? product['name'] ?? 'Item',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                      Text(
-                        'Dipesan: ${it['quantity']} ${it['unit']} (≈ $expectedPcs pcs)',
-                        style: const TextStyle(fontSize: 11, color: AppColors.mutedForeground),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text('Jumlah Baik (pcs):', style: TextStyle(fontSize: 12)),
-                          const Spacer(),
-                          SizedBox(
-                            width: 80,
-                            height: 40,
-                            child: TextField(
-                              controller: qtyControllers[variantId],
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              decoration: const InputDecoration(
-                                contentPadding: EdgeInsets.zero,
-                                isDense: true,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ],
-          ),
-        ),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.brandLightBeige,
+      appBar: AppBar(
+        title: const Text('Barang Masuk'),
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner_rounded),
+            onPressed: () {},
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              minimumSize: const Size(110, 42),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        children: [
+          // 1. Segmented Pill Toggle
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEDE7DF),
+              borderRadius: BorderRadius.circular(12),
             ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-
-              // Buat payload
-              final receiptItems = items.map((it) {
-                final variantId = it['variantId'] ?? it['id'];
-                final conv = (it['conversionFactor'] as num? ?? 1).toDouble();
-                final expectedPcs = ((it['quantity'] as num? ?? 1) * conv).toInt();
-                final receivedPcs = int.tryParse(qtyControllers[variantId]?.text ?? '') ?? expectedPcs;
-                final unitCost = (it['unitCost'] as num? ?? 0).toDouble() / conv;
-
-                return {
-                  'invoiceItemId': it['id'],
-                  'variantId': variantId,
-                  'expectedQuantity': expectedPcs,
-                  'receivedQuantity': receivedPcs,
-                  'damagedQuantity': 0,
-                  'shortQuantity': expectedPcs > receivedPcs ? expectedPcs - receivedPcs : 0,
-                  'unitCost': unitCost,
-                };
-              }).toList();
-
-              final idempotencyKey = 'RECEIPT-${schedule['id']}-${DateTime.now().millisecondsSinceEpoch}';
-
-              try {
-                await ApiService.instance.confirmReceipt({
-                  'scheduleId': schedule['id'],
-                  'idempotencyKey': idempotencyKey,
-                  'items': receiptItems,
-                });
-
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Penerimaan barang berhasil dicatat! Stok otomatis bertambah.'),
-                      backgroundColor: AppColors.accent,
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedMode = 0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _selectedMode == 0 ? AppColors.brandEspresso : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Manual',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: _selectedMode == 0 ? FontWeight.bold : FontWeight.w500,
+                          color: _selectedMode == 0 ? Colors.white : AppColors.textDark,
+                        ),
+                      ),
                     ),
-                  );
-                  _loadData();
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString().replaceAll('Exception: ', '')),
-                      backgroundColor: AppColors.destructive,
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedMode = 1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _selectedMode == 1 ? AppColors.brandEspresso : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Scan Bon / Faktur',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: _selectedMode == 1 ? FontWeight.bold : FontWeight.w500,
+                          color: _selectedMode == 1 ? Colors.white : AppColors.textDark,
+                        ),
+                      ),
                     ),
-                  );
-                }
-              }
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 2. Camera Viewfinder Card with Corner Brackets
+          Container(
+            height: 380,
+            decoration: BoxDecoration(
+              color: const Color(0xFF26211E),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: AppColors.shadow3D,
+            ),
+            child: Stack(
+              children: [
+                // Bon Faktur Image Mockup inside viewfinder
+                Center(
+                  child: Container(
+                    width: 240,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9F8F6),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'TOKO MAJU JAYA',
+                          style: TextStyle(
+                            fontFamily: 'Courier',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('FAKTUR PEMBELIAN', style: TextStyle(fontFamily: 'Courier', fontSize: 10)),
+                        const Divider(thickness: 1, color: Colors.black45),
+                        const SizedBox(height: 6),
+                        _buildReceiptRow('Tas Tote', '5 x 180.000', '900.000'),
+                        const SizedBox(height: 4),
+                        _buildReceiptRow('Shoulder Bag', '3 x 150.000', '450.000'),
+                        const SizedBox(height: 8),
+                        const Divider(thickness: 1, color: Colors.black45),
+                        _buildReceiptRow('Total', '', '1.350.000', isBold: true),
+                        const SizedBox(height: 12),
+                        const Text('Terima Kasih', style: TextStyle(fontFamily: 'Courier', fontSize: 9)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Corner Brackets
+                Positioned(
+                  top: 24,
+                  left: 24,
+                  child: _buildCorner(isTop: true, isLeft: true),
+                ),
+                Positioned(
+                  top: 24,
+                  right: 24,
+                  child: _buildCorner(isTop: true, isLeft: false),
+                ),
+                Positioned(
+                  bottom: 24,
+                  left: 24,
+                  child: _buildCorner(isTop: false, isLeft: true),
+                ),
+                Positioned(
+                  bottom: 24,
+                  right: 24,
+                  child: _buildCorner(isTop: false, isLeft: false),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 3. Action Button
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ScanResultScreen()),
+              );
             },
-            child: const Text('Konfirmasi'),
+            child: const Text('Ambil Foto Bon / Faktur'),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Pastikan seluruh informasi pada bon terlihat jelas dan tidak blur.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textMuted,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'RECEIVED':
-      case 'CONFIRMED':
-      case 'VERIFIED':
-        return AppColors.accent;
-      case 'SCHEDULED':
-      case 'NEEDS_REVIEW':
-        return AppColors.warning;
-      case 'LATE':
-      case 'CANCELLED':
-        return AppColors.destructive;
-      default:
-        return AppColors.secondary;
-    }
+  Widget _buildReceiptRow(String item, String qtyPrice, String total, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item,
+                style: TextStyle(
+                  fontFamily: 'Courier',
+                  fontSize: 10,
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              if (qtyPrice.isNotEmpty)
+                Text(
+                  qtyPrice,
+                  style: const TextStyle(fontFamily: 'Courier', fontSize: 9, color: Colors.black54),
+                ),
+            ],
+          ),
+        ),
+        Text(
+          total,
+          style: TextStyle(
+            fontFamily: 'Courier',
+            fontSize: 10,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
+    );
   }
 
-  String _getStatusLabel(String status) {
-    switch (status) {
-      case 'IMAGE_UPLOADED':
-        return 'Foto Diunggah';
-      case 'PROCESSING':
-        return 'Ekstraksi AI...';
-      case 'NEEDS_REVIEW':
-        return 'Perlu Diperiksa';
-      case 'VERIFIED':
-        return 'Terverifikasi';
-      case 'SCHEDULED':
-        return 'Dijadwalkan';
-      case 'RECEIVED':
-        return 'Diterima Lengkap';
-      case 'PARTIALLY_RECEIVED':
-        return 'Sebagian Diterima';
-      case 'LATE':
-        return 'Terlambat';
-      default:
-        return status;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Barang Masuk & Faktur'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        color: AppColors.accent,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.accent))
-            : _error != null
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.error_outline, size: 48, color: AppColors.destructive),
-                          const SizedBox(height: 12),
-                          Text(_error!),
-                          const SizedBox(height: 16),
-                          ElevatedButton(onPressed: _loadData, child: const Text('Coba Lagi')),
-                        ],
-                      ),
-                    ),
-                  )
-                : ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      // Jadwal Kedatangan Aktif
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Jadwal Kedatangan Barang', style: theme.textTheme.titleMedium),
-                          Text('${_schedules.length} Jadwal', style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      if (_schedules.isEmpty)
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              children: const [
-                                Icon(Icons.local_shipping_outlined, color: AppColors.mutedForeground, size: 36),
-                                SizedBox(height: 8),
-                                Text('Tidak ada jadwal pengiriman aktif', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ..._schedules.map((s) {
-                          final inv = s['invoice'] ?? {};
-                          final status = s['status'] as String? ?? 'SCHEDULED';
-                          final statusColor = _getStatusColor(status);
-                          final isPending = status == 'SCHEDULED' || status == 'LATE' || status == 'PARTIALLY_RECEIVED';
-
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          _getStatusLabel(status),
-                                          style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
-                                        ),
-                                      ),
-                                      Text(
-                                        inv['internalNumber'] ?? '',
-                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    inv['supplier']?['name'] ?? 'Supplier Grosir',
-                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Estimasi Sampai: ${DateFormat('dd MMM yyyy').format(DateTime.parse(s['expectedDate']))}',
-                                    style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground),
-                                  ),
-                                  if (isPending) ...[
-                                    const SizedBox(height: 14),
-                                    ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.accent,
-                                        minimumSize: const Size.fromHeight(42),
-                                      ),
-                                      onPressed: () => _showReceiptDialog(s),
-                                      icon: const Icon(Icons.done_all, size: 18),
-                                      label: const Text('Terima & Hitung Fisik'),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-
-                      const SizedBox(height: 24),
-
-                      // Daftar Faktur Supplier
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Faktur & Bon Pembelian', style: theme.textTheme.titleMedium),
-                          Text('${_invoices.length} Faktur', style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      ..._invoices.map((inv) {
-                        final status = inv['status'] as String? ?? 'DRAFT';
-                        final statusColor = _getStatusColor(status);
-                        final total = double.tryParse(inv['grandTotal'].toString()) ?? 0;
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            leading: CircleAvatar(
-                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                              child: const Icon(Icons.receipt_long, color: AppColors.primary),
-                            ),
-                            title: Text(
-                              inv['internalNumber'] ?? 'Faktur',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            subtitle: Text(
-                              '${inv['supplier']?['name'] ?? 'Supplier'} • Total: ${_currency.format(total)}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                _getStatusLabel(status),
-                                style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+  Widget _buildCorner({required bool isTop, required bool isLeft}) {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        border: Border(
+          top: isTop ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
+          bottom: !isTop ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
+          left: isLeft ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
+          right: !isLeft ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
+        ),
       ),
     );
   }

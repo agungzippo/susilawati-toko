@@ -178,4 +178,42 @@ class ApiService {
     final err = jsonDecode(response.body);
     throw Exception(err['error'] ?? 'Gagal mengonfirmasi penerimaan barang');
   }
+
+  // Recent transactions (Screen 2)
+  Future<List<dynamic>> getRecentTransactions({int limit = 10}) async {
+    final url = Uri.parse('$baseUrl/inventory/recent-transactions?limit=$limit');
+    final response = await http.get(url, headers: _headers());
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return json['data'] as List<dynamic>;
+    }
+    return [];
+  }
+
+  // Suppliers list (Screen 8)
+  Future<List<dynamic>> getSuppliers() async {
+    final url = Uri.parse('$baseUrl/suppliers');
+    final response = await http.get(url, headers: _headers());
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return json['data'] as List<dynamic>;
+    }
+    return [];
+  }
+
+  // Stock out / sales (Screen 7)
+  Future<Map<String, dynamic>> stockOut(Map<String, dynamic> payload) async {
+    final url = Uri.parse('$baseUrl/inventory/stock-out');
+    final response = await http.post(
+      url,
+      headers: _headers(),
+      body: jsonEncode(payload),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body);
+      return json['data'] as Map<String, dynamic>;
+    }
+    final err = jsonDecode(response.body);
+    throw Exception(err['error'] ?? 'Gagal mencatat barang keluar');
+  }
 }

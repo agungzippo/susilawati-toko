@@ -232,6 +232,27 @@ inventoryRouter.get("/summary", async (c) => {
 
   const potentialProfit = totalSellingValue - totalCostValue;
 
+  // Hitung aktivitas hari ini
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const todayMovements = await prisma.stockMovement.findMany({
+    where: {
+      storeId,
+      createdAt: { gte: todayStart },
+    },
+  });
+
+  let itemsInToday = 0;
+  let itemsOutToday = 0;
+  for (const m of todayMovements) {
+    if (m.type === "GOODS_RECEIPT" || m.type === "STOCK_ADJUSTMENT_IN" || m.type === "INITIAL") {
+      itemsInToday += m.quantityDelta;
+    } else if (m.type === "STOCK_ADJUSTMENT_OUT") {
+      itemsOutToday += Math.abs(m.quantityDelta);
+    }
+  }
+
   return c.json({
     data: {
       totalSkus,
@@ -241,9 +262,151 @@ inventoryRouter.get("/summary", async (c) => {
       estimatedPotentialProfit: Math.round(potentialProfit),
       lowStockCount,
       outOfStockCount,
+      itemsInToday,
+      itemsOutToday,
+      transactionsToday: todayMovements.length,
       calculatedAt: new Date().toISOString(),
     },
   });
+});
+
+// Transaksi terbaru untuk dashboard
+inventoryRouter.get("/recent-transactions", async (c) => {
+  const storeId = c.get("storeId");
+  const limit = Number(c.req.query("limit")) || 10;
+
+  const movements = await prisma.stockMovement.findMany({
+    where: { storeId },
+    include: {
+      variant: {
+        include: { product: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+  const transactions = movements.map((m) => {
+    const isIncoming = m.type === "GOODS_RECEIPT" || m.type === "INITIAL" || m.type === "STOCK_ADJUSTMENT_IN";
+    const qty = Math.abs(m.quantityDelta);
+    const unitPrice = isIncoming ? Number(m.unitCost) : Number(m.variant.referenceSellingPrice);
+    const totalAmount = qty * unitPrice;
+
+    return {
+      id: m.id,
+      type: isIncoming ? "IN" : "OUT",
+      title: isIncoming ? "Barang Masuk" : "Barang Keluar",
+      productName: m.variant.product.name,
+      variantDetail: `${m.variant.color || "Default"} (${qty} pcs)`,
+      quantity: qty,
+      totalAmount: Math.round(totalAmount),
+      date: m.createdAt.toISOString(),
+      notes: m.notes,
+    };
+  });
+
+  return c.json({ data: transactions });
+});
+
+// Catat Barang Keluar (Pengurangan Stok / Penjualan Toko)
+const stockOutSchema = z.object({
+  customerName: z.string().optional(),
+  date: z.string().optional(),
+  items: z
+    .array(
+      z.object({
+        variantId: z.string().min(1),
+        quantity: z.number().int().positive("Jumlah keluar minimal 1 pcs"),
+      })
+    )
+    .min(1, "Minimal pilih 1 item"),
+  notes: z.string().optional(),
+});
+
+inventoryRouter.post("/stock-out", zValidator("json", stockOutSchema), async (c) => {
+  const storeId = c.get("storeId");
+  const user = c.get("user");
+  const body = c.req.valid("json");
+
+  // Ambil lokasi default
+  const location = await prisma.location.findFirst({
+    where: { storeId, isActive: true },
+  });
+  if (!location) return c.json({ error: "Gudang toko belum terdaftar" }, 400);
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      let grandTotal = 0;
+      const updatedItems = [];
+
+      for (const item of body.items) {
+        const balance = await tx.stockBalance.findUnique({
+          where: {
+            locationId_variantId: {
+              locationId: location.id,
+              variantId: item.variantId,
+            },
+          },
+          include: { variant: { include: { product: true } } },
+        });
+
+        if (!balance || balance.quantityOnHand < item.quantity) {
+          throw new Error(
+            `Stok untuk ${balance?.variant.product.name || "produk"} tidak mencukupi (Tersedia: ${balance?.quantityOnHand ?? 0} pcs, diminta: ${item.quantity} pcs)`
+          );
+        }
+
+        const newQty = balance.quantityOnHand - item.quantity;
+        const sellingPrice = Number(balance.variant.referenceSellingPrice);
+        const lineTotal = item.quantity * sellingPrice;
+        grandTotal += lineTotal;
+
+        await tx.stockBalance.update({
+          where: { id: balance.id },
+          data: {
+            quantityOnHand: newQty,
+            version: { increment: 1 },
+          },
+        });
+
+        const movement = await tx.stockMovement.create({
+          data: {
+            storeId,
+            locationId: location.id,
+            variantId: item.variantId,
+            type: "STOCK_ADJUSTMENT_OUT",
+            quantityDelta: -item.quantity,
+            unitCost: balance.averageCost,
+            balanceAfter: newQty,
+            referenceType: "STOCK_OUT",
+            notes: body.notes || `Barang keluar ke ${body.customerName || "Pelanggan"}`,
+            createdBy: user.sub,
+          },
+        });
+
+        updatedItems.push({
+          variantId: item.variantId,
+          productName: balance.variant.product.name,
+          color: balance.variant.color,
+          quantity: item.quantity,
+          sellingPrice,
+          lineTotal,
+          remainingStock: newQty,
+        });
+      }
+
+      return {
+        customerName: body.customerName,
+        totalItems: body.items.reduce((acc, curr) => acc + curr.quantity, 0),
+        grandTotal,
+        items: updatedItems,
+      };
+    });
+
+    return c.json({ success: true, data: result }, 201);
+  } catch (err: any) {
+    return c.json({ error: err.message || "Gagal mencatat barang keluar" }, 400);
+  }
 });
 
 // Ekspor Saldo Stok ke CSV

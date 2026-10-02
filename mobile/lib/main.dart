@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/theme.dart';
 import 'core/api_service.dart';
-import 'screens/login_screen.dart';
-import 'screens/main_navigation.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,9 +19,7 @@ class TokoSusilawatiApp extends StatelessWidget {
       title: 'SUSILAWATI TOKO',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: ApiService.instance.isAuthenticated
-          ? const MainNavigation()
-          : const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }

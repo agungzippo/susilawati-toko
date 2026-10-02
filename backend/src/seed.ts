@@ -1,19 +1,19 @@
 import { prisma } from "./db.js";
 
 async function main() {
-  console.log("🌱 Memulai seeding SUSILAWATI TOKO...");
+  console.log("🌱 Menyiapkan data SUSILAWATI TOKO sesuai desain...");
 
   // 1. Toko
   const store = await prisma.store.upsert({
     where: { id: "store-susilawati-001" },
     create: {
       id: "store-susilawati-001",
-      name: "SUSILAWATI TOKO",
+      name: "susilawati toko .",
       timezone: "Asia/Jakarta",
       currency: "IDR",
     },
     update: {
-      name: "SUSILAWATI TOKO",
+      name: "susilawati toko .",
     },
   });
 
@@ -23,9 +23,9 @@ async function main() {
     create: {
       id: "loc-gudang-utama-001",
       storeId: store.id,
-      name: "Gudang Utama Toko",
+      name: "Rak A1",
       type: "WAREHOUSE",
-      address: "Lantai 1 Area Belakang Toko",
+      address: "Lantai 1 Area Toko",
     },
     update: {},
   });
@@ -59,89 +59,170 @@ async function main() {
   });
 
   // 4. Kategori Produk
-  const catRansel = await prisma.productCategory.upsert({
-    where: { storeId_name: { storeId: store.id, name: "Tas Ransel" } },
-    create: { storeId: store.id, name: "Tas Ransel" },
-    update: {},
-  });
-
-  const catSelempang = await prisma.productCategory.upsert({
-    where: { storeId_name: { storeId: store.id, name: "Tas Selempang" } },
-    create: { storeId: store.id, name: "Tas Selempang" },
-    update: {},
-  });
-
-  await prisma.productCategory.upsert({
-    where: { storeId_name: { storeId: store.id, name: "Totebag" } },
-    create: { storeId: store.id, name: "Totebag" },
-    update: {},
-  });
+  const categories = ["Tas Tote", "Shoulder Bag", "Backpack", "Tas Selempang", "Tas Ransel"];
+  const catMap: Record<string, string> = {};
+  for (const catName of categories) {
+    const cat = await prisma.productCategory.upsert({
+      where: { storeId_name: { storeId: store.id, name: catName } },
+      create: { storeId: store.id, name: catName },
+      update: {},
+    });
+    catMap[catName] = cat.id;
+  }
 
   // 5. Supplier
-  const supplierManggaDua = await prisma.supplier.create({
-    data: {
+  const s1 = await prisma.supplier.upsert({
+    where: { id: "supp-001" },
+    create: {
+      id: "supp-001",
       storeId: store.id,
-      name: "Grosir Tas Mangga Dua Indah",
-      phone: "081234567890",
-      address: "Pasar Pagi Mangga Dua Lt. 2 Blok B No. 15",
-      notes: "Supplier utama tas ransel dan sling bag",
+      name: "PT. Maju Jaya",
+      phone: "0812 3456 7890",
+      email: "mjujaya@supplier.co.id",
+      address: "Sentra Tas Mangga Dua",
     },
+    update: {},
   });
 
-  // 6. Produk & Varian Contoh
-  const p1 = await prisma.product.create({
-    data: {
+  const s2 = await prisma.supplier.upsert({
+    where: { id: "supp-002" },
+    create: {
+      id: "supp-002",
       storeId: store.id,
-      categoryId: catRansel.id,
-      brand: "Polo Paris",
-      name: "Tas Ransel Laptop Oxford 15 Inch",
-      description: "Bahan waterproof, kompartemen laptop busa tebal",
-      variants: {
-        create: [
-          {
-            sku: "TR-OXF-BLK",
-            barcode: "899123450001",
-            color: "Hitam",
-            size: "15 Inch",
-            referenceSellingPrice: 135000,
-            minimumStock: 5,
-          },
-          {
-            sku: "TR-OXF-NVY",
-            barcode: "899123450002",
-            color: "Navy",
-            size: "15 Inch",
-            referenceSellingPrice: 135000,
-            minimumStock: 5,
-          },
-          {
-            sku: "TR-OXF-GRY",
-            barcode: "899123450003",
-            color: "Abu-abu",
-            size: "15 Inch",
-            referenceSellingPrice: 135000,
-            minimumStock: 5,
-          },
-        ],
-      },
+      name: "CV. Sejahtera Abadi",
+      phone: "0813 2222 3333",
+      email: "sejahtera@supplier.co.id",
+      address: "Kawasan Industri Pulo Gadung",
     },
-    include: { variants: true },
+    update: {},
   });
 
-  // Isi stok awal untuk varian
-  const initialStocks = [
-    { variant: p1.variants[0], qty: 15, cost: 75000 },
-    { variant: p1.variants[1], qty: 8, cost: 75000 },
-    { variant: p1.variants[2], qty: 2, cost: 75000 }, // Stok menipis
+  const s3 = await prisma.supplier.upsert({
+    where: { id: "supp-003" },
+    create: {
+      id: "supp-003",
+      storeId: store.id,
+      name: "UD. Lestari",
+      phone: "0817 8888 9999",
+      email: "lestari@supplier.co.id",
+      address: "Pusat Grosir Pasar Baru",
+    },
+    update: {},
+  });
+
+  // 6. Produk Sesuai Mockup UI
+  const mockProducts = [
+    {
+      name: "Tas Tote Minimalis",
+      category: "Tas Tote",
+      sku: "TT001",
+      barcode: "89920250001",
+      color: "Beige Cream",
+      size: "Medium",
+      selling: 285000,
+      cost: 185000,
+      stock: 15,
+      supplierId: s1.id,
+    },
+    {
+      name: "Shoulder Bag",
+      category: "Shoulder Bag",
+      sku: "SB002",
+      barcode: "89920250002",
+      color: "Classic Black",
+      size: "One Size",
+      selling: 260000,
+      cost: 160000,
+      stock: 8,
+      supplierId: s2.id,
+    },
+    {
+      name: "Backpack",
+      category: "Backpack",
+      sku: "BP003",
+      barcode: "89920250003",
+      color: "Matte Black",
+      size: "Large",
+      selling: 350000,
+      cost: 230000,
+      stock: 5,
+      supplierId: s1.id,
+    },
+    {
+      name: "Tas Selempang",
+      category: "Tas Selempang",
+      sku: "SL004",
+      barcode: "89920250004",
+      color: "Olive Green",
+      size: "Compact",
+      selling: 220000,
+      cost: 140000,
+      stock: 12,
+      supplierId: s3.id,
+    },
+    {
+      name: "Tas Ransel",
+      category: "Tas Ransel",
+      sku: "RS005",
+      barcode: "89920250005",
+      color: "Caramel Brown",
+      size: "Large",
+      selling: 420000,
+      cost: 280000,
+      stock: 6,
+      supplierId: s1.id,
+    },
   ];
 
-  for (const item of initialStocks) {
-    await prisma.stockBalance.create({
-      data: {
+  for (const item of mockProducts) {
+    let p = await prisma.product.findFirst({
+      where: { storeId: store.id, name: item.name },
+      include: { variants: true },
+    });
+
+    if (!p) {
+      p = await prisma.product.create({
+        data: {
+          storeId: store.id,
+          categoryId: catMap[item.category],
+          brand: "Susilawati Exclusive",
+          name: item.name,
+          description: `Koleksi tas ${item.name} dengan material kulit sintetis premium`,
+          variants: {
+            create: [
+              {
+                sku: item.sku,
+                barcode: item.barcode,
+                color: item.color,
+                size: item.size,
+                referenceSellingPrice: item.selling,
+                minimumStock: 3,
+              },
+            ],
+          },
+        },
+        include: { variants: true },
+      });
+    }
+
+    const variant = p.variants[0];
+
+    await prisma.stockBalance.upsert({
+      where: {
+        locationId_variantId: {
+          locationId: location.id,
+          variantId: variant.id,
+        },
+      },
+      create: {
         storeId: store.id,
         locationId: location.id,
-        variantId: item.variant.id,
-        quantityOnHand: item.qty,
+        variantId: variant.id,
+        quantityOnHand: item.stock,
+        averageCost: item.cost,
+      },
+      update: {
+        quantityOnHand: item.stock,
         averageCost: item.cost,
       },
     });
@@ -150,24 +231,58 @@ async function main() {
       data: {
         storeId: store.id,
         locationId: location.id,
-        variantId: item.variant.id,
+        variantId: variant.id,
         type: "INITIAL",
-        quantityDelta: item.qty,
+        quantityDelta: item.stock,
         unitCost: item.cost,
-        balanceAfter: item.qty,
+        balanceAfter: item.stock,
         referenceType: "INITIAL_STOCK",
-        notes: "Saldo stok pembukaan toko",
+        notes: "Stok awal etalase toko",
         createdBy: owner.id,
       },
     });
   }
 
-  console.log("✅ Seeding SUSILAWATI TOKO selesai!");
-  console.log(`- Toko: ${store.name}`);
-  console.log(`- Login Owner: ${owner.email} / admin123`);
-  console.log(`- Login Staf: staf@susilawati.com / staf123`);
-  console.log(`- Supplier: ${supplierManggaDua.name}`);
-  console.log(`- Produk terdaftar: ${p1.name} (3 varian)`);
+  // Buat contoh transaksi terbaru
+  // 1. Barang Masuk
+  const pSelempang = await prisma.product.findFirst({ where: { name: "Tas Selempang" }, include: { variants: true } });
+  if (pSelempang) {
+    await prisma.stockMovement.create({
+      data: {
+        storeId: store.id,
+        locationId: location.id,
+        variantId: pSelempang.variants[0].id,
+        type: "GOODS_RECEIPT",
+        quantityDelta: 3,
+        unitCost: 150000,
+        balanceAfter: 12,
+        referenceType: "GOODS_RECEIPT",
+        notes: "Barang Masuk dari UD. Lestari",
+        createdBy: owner.id,
+      },
+    });
+  }
+
+  // 2. Barang Keluar
+  const pTote = await prisma.product.findFirst({ where: { name: "Tas Tote Minimalis" }, include: { variants: true } });
+  if (pTote) {
+    await prisma.stockMovement.create({
+      data: {
+        storeId: store.id,
+        locationId: location.id,
+        variantId: pTote.variants[0].id,
+        type: "STOCK_ADJUSTMENT_OUT",
+        quantityDelta: -1,
+        unitCost: 185000,
+        balanceAfter: 15,
+        referenceType: "STOCK_OUT",
+        notes: "Barang Keluar ke Pelanggan Toko",
+        createdBy: owner.id,
+      },
+    });
+  }
+
+  console.log("✅ Seeding selesai! Data katalog sesuai mockup UI telah siap.");
 }
 
 main()

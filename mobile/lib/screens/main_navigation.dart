@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import 'home_screen.dart';
 import 'stock_screen.dart';
-import 'scanner_screen.dart';
-import 'incoming_screen.dart';
+import 'transaction_screen.dart';
+import 'supplier_screen.dart';
 import 'profile_screen.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -26,8 +26,8 @@ class _MainNavigationState extends State<MainNavigation> {
         setState(() => _currentIndex = index);
       }),
       const StockScreen(),
-      const ScannerScreen(),
-      const IncomingScreen(),
+      const TransactionScreen(),
+      const SupplierScreen(),
       const ProfileScreen(),
     ];
   }
@@ -41,43 +41,44 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+          color: Colors.white,
+          border: Border(top: BorderSide(color: AppColors.borderWarm, width: 1)),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.mutedForeground,
+          selectedItemColor: AppColors.brandEspresso,
+          unselectedItemColor: AppColors.textMuted,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           elevation: 0,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
+              activeIcon: Icon(Icons.home_rounded),
               label: 'Beranda',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.inventory_2_outlined),
-              activeIcon: Icon(Icons.inventory_2),
+              icon: Icon(Icons.grid_view_outlined),
+              activeIcon: Icon(Icons.grid_view_rounded),
               label: 'Stok',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.qr_code_scanner),
-              activeIcon: Icon(Icons.qr_code_scanner),
-              label: 'Scan',
+              icon: Icon(Icons.receipt_long_outlined),
+              activeIcon: Icon(Icons.receipt_long_rounded),
+              label: 'Transaksi',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.move_to_inbox_outlined),
-              activeIcon: Icon(Icons.move_to_inbox),
-              label: 'Masuk',
+              icon: Icon(Icons.people_outline_rounded),
+              activeIcon: Icon(Icons.people_rounded),
+              label: 'Suplier',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Akun',
+              icon: Icon(Icons.person_outline_rounded),
+              activeIcon: Icon(Icons.person_rounded),
+              label: 'Profil',
             ),
           ],
         ),

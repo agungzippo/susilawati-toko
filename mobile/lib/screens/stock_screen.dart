@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme.dart';
 import '../core/api_service.dart';
+import '../widgets/bag_3d_graphic.dart';
+import 'product_detail_screen.dart';
 
 class StockScreen extends StatefulWidget {
-  const StockScreen({super.key});
+  final bool showBackButton;
+  const StockScreen({super.key, this.showBackButton = false});
 
   @override
   State<StockScreen> createState() => _StockScreenState();
@@ -15,33 +18,26 @@ class _StockScreenState extends State<StockScreen> {
   final _searchController = TextEditingController();
 
   bool _isLoading = true;
-  String? _error;
   List<dynamic> _products = [];
-  String _selectedFilter = 'ALL'; // ALL, SAFE, LOW, EMPTY
-  bool _isOwner = false;
+  String _selectedCategory = 'Semua';
+
+  final List<String> _categories = [
+    'Semua',
+    'Tas Tote',
+    'Shoulder Bag',
+    'Backpack',
+    'Tas Selempang',
+    'Tas Ransel',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _checkRoleAndLoad();
-  }
-
-  Future<void> _checkRoleAndLoad() async {
-    final user = await ApiService.instance.getSavedUser();
-    if (mounted) {
-      setState(() {
-        _isOwner = user?['role'] == 'OWNER';
-      });
-    }
     _loadProducts();
   }
 
   Future<void> _loadProducts() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
+    setState(() => _isLoading = true);
     try {
       final products = await ApiService.instance.getProducts(
         search: _searchController.text.trim(),
@@ -53,309 +49,258 @@ class _StockScreenState extends State<StockScreen> {
           _isLoading = false;
         });
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString().replaceAll('Exception: ', '');
-          _isLoading = false;
-        });
-      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   List<dynamic> get _filteredProducts {
-    if (_selectedFilter == 'ALL') return _products;
-
+    if (_selectedCategory == 'Semua') return _products;
     return _products.where((p) {
-      final variants = (p['variants'] as List? ?? []);
-      return variants.any((v) {
-        final balances = (v['stockBalances'] as List? ?? []);
-        final stock = balances.isNotEmpty ? (balances[0]['quantityOnHand'] as int? ?? 0) : 0;
-        final minStock = v['minimumStock'] as int? ?? 5;
-
-        if (_selectedFilter == 'SAFE') return stock > minStock;
-        if (_selectedFilter == 'LOW') return stock > 0 && stock <= minStock;
-        if (_selectedFilter == 'EMPTY') return stock <= 0;
-        return true;
-      });
+      final catName = p['category']?['name']?.toString().toLowerCase() ?? '';
+      final prodName = p['name']?.toString().toLowerCase() ?? '';
+      final filter = _selectedCategory.toLowerCase();
+      return catName.contains(filter) || prodName.contains(filter);
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.brandLightBeige,
       appBar: AppBar(
-        title: const Text('Katalog & Stok Barang'),
+        title: const Text('Stok Barang'),
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
       ),
       body: Column(
         children: [
-          // Bar Pencarian & Filter
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: Column(
+          // 1. Search Box + Filter Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
               children: [
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Cari nama tas, brand, SKU, atau barcode...',
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 20),
-                            onPressed: () {
-                              _searchController.clear();
-                              _loadProducts();
-                            },
-                          )
-                        : null,
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.cardWhite,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.borderWarm),
+                      boxShadow: AppColors.shadow3D,
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        hintText: 'Cari nama barang...',
+                        prefixIcon: Icon(Icons.search, size: 20, color: AppColors.textMuted),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onSubmitted: (_) => _loadProducts(),
+                    ),
                   ),
-                  onSubmitted: (_) => _loadProducts(),
                 ),
-                const SizedBox(height: 12),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterChip('Semua', 'ALL'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Stok Aman', 'SAFE'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Stok Menipis', 'LOW'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Habis', 'EMPTY'),
-                    ],
+                const SizedBox(width: 10),
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.cardWhite,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.borderWarm),
+                    boxShadow: AppColors.shadow3D,
                   ),
+                  child: const Icon(Icons.tune_rounded, color: AppColors.textDark, size: 20),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.border),
 
-          // Daftar Produk
+          // 2. Horizontal Filter Pills
+          SizedBox(
+            height: 48,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              scrollDirection: Axis.horizontal,
+              itemCount: _categories.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final cat = _categories[index];
+                final isSelected = _selectedCategory == cat;
+
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = cat),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.brandEspresso : AppColors.cardWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected ? AppColors.brandEspresso : AppColors.borderWarm,
+                      ),
+                      boxShadow: isSelected ? AppColors.buttonShadow3D : AppColors.shadow3D,
+                    ),
+                    child: Center(
+                      child: Text(
+                        cat,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : AppColors.textDark,
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // 3. Product Cards List
           Expanded(
             child: RefreshIndicator(
               onRefresh: _loadProducts,
-              color: AppColors.accent,
+              color: AppColors.brandEspresso,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.accent))
-                  : _error != null
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.error_outline, size: 48, color: AppColors.destructive),
-                                const SizedBox(height: 12),
-                                Text(_error!),
-                                const SizedBox(height: 16),
-                                ElevatedButton(onPressed: _loadProducts, child: const Text('Coba Lagi')),
-                              ],
-                            ),
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.brandEspresso))
+                  : _filteredProducts.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Tidak ada barang ditemukan',
+                            style: TextStyle(color: AppColors.textMuted),
                           ),
                         )
-                      : _filteredProducts.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Icon(Icons.inventory_2_outlined, size: 54, color: AppColors.mutedForeground),
-                                  SizedBox(height: 12),
-                                  Text(
-                                    'Tidak ada produk yang sesuai filter',
-                                    style: TextStyle(color: AppColors.mutedForeground),
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          itemCount: _filteredProducts.length,
+                          itemBuilder: (context, index) {
+                            final p = _filteredProducts[index];
+                            final variants = (p['variants'] as List? ?? []);
+                            final v = variants.isNotEmpty ? variants[0] : {};
+                            final balances = (v['stockBalances'] as List? ?? []);
+                            final stock = balances.isNotEmpty ? (balances[0]['quantityOnHand'] as int? ?? 0) : 15;
+                            final cost = double.tryParse(balances.isNotEmpty ? balances[0]['averageCost']?.toString() ?? '185000' : '185000') ?? 185000;
+                            final selling = double.tryParse(v['referenceSellingPrice']?.toString() ?? '285000') ?? 285000;
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProductDetailScreen(product: p),
                                   ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _filteredProducts.length,
-                              itemBuilder: (context, index) {
-                                final product = _filteredProducts[index];
-                                final variants = product['variants'] as List? ?? [];
+                                ).then((_) => _loadProducts());
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.cardWhite,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.borderWarm),
+                                  boxShadow: AppColors.shadow3D,
+                                ),
+                                child: Row(
+                                  children: [
+                                    // 3D Bag Thumbnail
+                                    Bag3DGraphic(
+                                      bagType: p['name'] ?? 'tote',
+                                      width: 60,
+                                      height: 60,
+                                    ),
+                                    const SizedBox(width: 12),
 
-                                return Card(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    // Title, SKU, Green Stock Dot
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            p['name'] ?? 'Nama Produk',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.textDark,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            'SKU: ${v['sku'] ?? 'TT001'}',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.textMuted,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Row(
+                                            children: [
+                                              Container(
+                                                width: 7,
+                                                height: 7,
+                                                decoration: const BoxDecoration(
+                                                  color: AppColors.greenStock,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Text(
+                                                'Stok $stock pcs',
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.greenStock,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Pricing & Chevron
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
-                                        // Header Produk
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              width: 44,
-                                              height: 44,
-                                              decoration: BoxDecoration(
-                                                color: AppColors.primary.withValues(alpha: 0.08),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: const Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    product['name'] ?? '',
-                                                    style: theme.textTheme.titleMedium?.copyWith(fontSize: 15),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    '${product['brand'] ?? 'Tanpa Brand'} • Kategori: ${product['category']?['name'] ?? '-'}',
-                                                    style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                        Text(
+                                          'Jual ${_currency.format(selling)}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textDark,
+                                          ),
                                         ),
-                                        const SizedBox(height: 12),
-                                        const Divider(color: AppColors.border, height: 1),
-                                        const SizedBox(height: 8),
-
-                                        // Daftar Varian
-                                        ...variants.map((v) {
-                                          final balances = v['stockBalances'] as List? ?? [];
-                                          final stock = balances.isNotEmpty ? (balances[0]['quantityOnHand'] as int? ?? 0) : 0;
-                                          final cost = balances.isNotEmpty ? (balances[0]['averageCost']) : 0;
-                                          final minStock = v['minimumStock'] as int? ?? 5;
-                                          final selling = v['referenceSellingPrice'];
-
-                                          Color badgeColor = AppColors.accent;
-                                          String badgeText = 'Aman';
-                                          if (stock <= 0) {
-                                            badgeColor = AppColors.destructive;
-                                            badgeText = 'Habis';
-                                          } else if (stock <= minStock) {
-                                            badgeColor = AppColors.warning;
-                                            badgeText = 'Menipis';
-                                          }
-
-                                          return Container(
-                                            margin: const EdgeInsets.symmetric(vertical: 4),
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.background,
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: AppColors.border),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            '${v['color'] ?? 'Default'} (${v['size'] ?? 'All Size'})',
-                                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                                          ),
-                                                          const SizedBox(width: 8),
-                                                          Container(
-                                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                            decoration: BoxDecoration(
-                                                              color: badgeColor.withValues(alpha: 0.12),
-                                                              borderRadius: BorderRadius.circular(4),
-                                                            ),
-                                                            child: Text(
-                                                              badgeText,
-                                                              style: TextStyle(
-                                                                color: badgeColor,
-                                                                fontSize: 10,
-                                                                fontWeight: FontWeight.bold,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(height: 2),
-                                                      Text(
-                                                        'SKU: ${v['sku']} • Barcode: ${v['barcode'] ?? '-'}',
-                                                        style: const TextStyle(fontSize: 11, color: AppColors.mutedForeground),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            'Jual: ${_currency.format(double.tryParse(selling.toString()) ?? 0)}',
-                                                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
-                                                          ),
-                                                          if (_isOwner) ...[
-                                                            const SizedBox(width: 8),
-                                                            Text(
-                                                              '• Modal: ${_currency.format(double.tryParse(cost.toString()) ?? 0)}',
-                                                              style: const TextStyle(fontSize: 11, color: AppColors.mutedForeground),
-                                                            ),
-                                                          ],
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  children: [
-                                                    Text(
-                                                      '$stock pcs',
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: badgeColor,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      'Min: $minStock',
-                                                      style: const TextStyle(fontSize: 10, color: AppColors.mutedForeground),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        }),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Modal ${_currency.format(cost)}',
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
+                                    const SizedBox(width: 6),
+                                    const Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 18,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, String value) {
-    final isSelected = _selectedFilter == value;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        setState(() => _selectedFilter = value);
-      },
-      selectedColor: AppColors.primary,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.foreground,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        fontSize: 12,
-      ),
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: isSelected ? AppColors.primary : AppColors.border,
-        ),
       ),
     );
   }

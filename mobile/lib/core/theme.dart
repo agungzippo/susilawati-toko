@@ -2,23 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Palet Resmi SUSILAWATI TOKO dari design-system/susilawati-toko/MASTER.md
-  static const Color primary = Color(0xFF334155); // Slate 700
-  static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color secondary = Color(0xFF475569); // Slate 600
-  static const Color onSecondary = Color(0xFFFFFFFF);
-  static const Color accent = Color(0xFF059669); // Emerald 600 (Sukses / CTA)
-  static const Color onAccent = Color(0xFFFFFFFF);
-  static const Color background = Color(0xFFF8FAFC); // Slate 50
-  static const Color foreground = Color(0xFF0F172A); // Slate 900
-  static const Color card = Color(0xFFFFFFFF);
-  static const Color cardForeground = Color(0xFF0F172A);
-  static const Color muted = Color(0xFFF1F5F9); // Slate 100
-  static const Color mutedForeground = Color(0xFF64748B); // Slate 500
-  static const Color border = Color(0xFFE2E8F0); // Slate 200
-  static const Color warning = Color(0xFFD97706); // Amber 600 (Stok Menipis)
-  static const Color destructive = Color(0xFFDC2626); // Red 600 (Stok Habis / Rusak)
-  static const Color onDestructive = Color(0xFFFFFFFF);
+  // Palet Warna Mewah Butik Tas SUSILAWATI TOKO (Sesuai Mockup UI)
+  static const Color brandEspresso = Color(0xFF3D2F28); // Kopi pekat / Kulit tua
+  static const Color brandCoffee = Color(0xFF4A3B32); // Cokelat kopi
+  static const Color brandWarm = Color(0xFF6E5849); // Warm leather
+  static const Color brandLightBeige = Color(0xFFF7F4F0); // Latar belakang utama
+  static const Color cardWhite = Color(0xFFFFFFFF); // Kartu putih bersih
+  static const Color tileBeige = Color(0xFFF3EFEA); // Kotak aksi 3D
+  static const Color borderWarm = Color(0xFFECE6DE); // Garis batas halus
+
+  // Warna Teks
+  static const Color textDark = Color(0xFF1F1915); // Hitam pekat elegan
+  static const Color textMuted = Color(0xFF8C7E76); // Abu-abu taupe
+
+  // Aksen Status
+  static const Color greenStock = Color(0xFF2E7D32); // Hijau stok aman
+  static const Color redStock = Color(0xFFDC2626); // Merah stok keluar / habis
+  static const Color amberStock = Color(0xFFD97706); // Kuning peringatan
+
+  // Aliases for compatibility
+  static const Color primary = brandEspresso;
+  static const Color background = brandLightBeige;
+  static const Color border = borderWarm;
+  static const Color mutedForeground = textMuted;
+  static const Color foreground = textDark;
+  static const Color card = cardWhite;
+  static const Color destructive = redStock;
+  static const Color warning = amberStock;
+  static const Color accent = brandWarm;
+
+  // Bayangan 3D Lembut
+  static List<BoxShadow> get shadow3D => [
+        BoxShadow(
+          color: const Color(0xFF3D2F28).withValues(alpha: 0.05),
+          blurRadius: 14,
+          offset: const Offset(0, 4),
+        ),
+        BoxShadow(
+          color: const Color(0xFF3D2F28).withValues(alpha: 0.02),
+          blurRadius: 4,
+          offset: const Offset(0, 1),
+        ),
+      ];
+
+  static List<BoxShadow> get buttonShadow3D => [
+        BoxShadow(
+          color: const Color(0xFF3D2F28).withValues(alpha: 0.2),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ];
 }
 
 class AppTheme {
@@ -27,127 +60,126 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: AppColors.brandLightBeige,
       colorScheme: const ColorScheme(
         brightness: Brightness.light,
-        primary: AppColors.primary,
-        onPrimary: AppColors.onPrimary,
-        secondary: AppColors.secondary,
-        onSecondary: AppColors.onSecondary,
-        error: AppColors.destructive,
-        onError: AppColors.onDestructive,
-        surface: AppColors.card,
-        onSurface: AppColors.foreground,
+        primary: AppColors.brandEspresso,
+        onPrimary: Colors.white,
+        secondary: AppColors.brandWarm,
+        onSecondary: Colors.white,
+        error: AppColors.redStock,
+        onError: Colors.white,
+        surface: AppColors.cardWhite,
+        onSurface: AppColors.textDark,
       ),
-      textTheme: GoogleFonts.nunitoSansTextTheme(baseTextTheme).copyWith(
-        displayLarge: GoogleFonts.rubik(
-          fontSize: 32,
+      textTheme: GoogleFonts.plusJakartaSansTextTheme(baseTextTheme).copyWith(
+        displayLarge: GoogleFonts.plusJakartaSans(
+          fontSize: 30,
           fontWeight: FontWeight.bold,
-          color: AppColors.foreground,
-          fontFeatures: const [FontFeature.tabularFigures()],
+          color: AppColors.textDark,
+          letterSpacing: -0.5,
         ),
-        displayMedium: GoogleFonts.rubik(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          color: AppColors.foreground,
-          fontFeatures: const [FontFeature.tabularFigures()],
+        displayMedium: GoogleFonts.plusJakartaSans(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textDark,
+          letterSpacing: -0.3,
         ),
-        titleLarge: GoogleFonts.rubik(
+        titleLarge: GoogleFonts.plusJakartaSans(
           fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textDark,
+        ),
+        titleMedium: GoogleFonts.plusJakartaSans(
+          fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: AppColors.foreground,
-          fontFeatures: const [FontFeature.tabularFigures()],
+          color: AppColors.textDark,
         ),
-        titleMedium: GoogleFonts.rubik(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: AppColors.foreground,
-          fontFeatures: const [FontFeature.tabularFigures()],
-        ),
-        bodyLarge: GoogleFonts.nunitoSans(
-          fontSize: 16,
-          fontWeight: FontWeight.normal,
-          color: AppColors.foreground,
-        ),
-        bodyMedium: GoogleFonts.nunitoSans(
+        bodyLarge: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.normal,
-          color: AppColors.foreground,
+          color: AppColors.textDark,
         ),
-        labelLarge: GoogleFonts.nunitoSans(
-          fontSize: 14,
+        bodyMedium: GoogleFonts.plusJakartaSans(
+          fontSize: 13,
+          fontWeight: FontWeight.normal,
+          color: AppColors.textMuted,
+        ),
+        labelLarge: GoogleFonts.plusJakartaSans(
+          fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: AppColors.foreground,
-          fontFeatures: const [FontFeature.tabularFigures()],
+          color: AppColors.textDark,
         ),
       ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.textDark,
         elevation: 0,
-        centerTitle: false,
-        titleTextStyle: GoogleFonts.rubik(
-          fontSize: 18,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 17,
           fontWeight: FontWeight.bold,
-          color: AppColors.onPrimary,
+          color: AppColors.textDark,
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.card,
+        color: AppColors.cardWhite,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.borderWarm, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accent,
-          foregroundColor: AppColors.onAccent,
-          minimumSize: const Size.fromHeight(48), // Minimal 48 dp touch target
+          backgroundColor: AppColors.brandEspresso,
+          foregroundColor: Colors.white,
+          minimumSize: const Size.fromHeight(50),
+          elevation: 2,
+          shadowColor: AppColors.brandEspresso.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.rubik(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+          textStyle: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          minimumSize: const Size.fromHeight(48),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          foregroundColor: AppColors.brandEspresso,
+          minimumSize: const Size.fromHeight(50),
+          side: const BorderSide(color: AppColors.borderWarm, width: 1.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.rubik(
-            fontSize: 16,
+          textStyle: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.card,
+        fillColor: AppColors.cardWhite,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.borderWarm),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.borderWarm),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.destructive),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.brandEspresso, width: 1.5),
         ),
       ),
     );
