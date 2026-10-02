@@ -4,13 +4,44 @@ services:
     container_name: toko-susilawati-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-      POSTGRES_DB: toko_susilawati
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      POSTGRES_DB: ${POSTGRES_DB:-toko_susilawati}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - toko-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: toko-susilawati-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgrespassword}@postgres:5432/${POSTGRES_DB:-toko_susilawati}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-toko-susilawati-production-secret-2026}
+      PORT: 3000
+      UPLOAD_DIR: ./uploads
+    ports:
+      - "127.0.0.1:3004:3000"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - toko-network
+
+networks:
+  toko-network:
+    driver: bridge
 
 volumes:
   postgres_data:
+  uploads_data:

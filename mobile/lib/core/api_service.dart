@@ -11,14 +11,20 @@ class ApiService {
   String? _token;
 
   String get baseUrl {
-    if (kIsWeb) return 'http://localhost:3000/api/v1';
+    if (kIsWeb) {
+      if (Uri.base.host == 'localhost' || Uri.base.host == '127.0.0.1') {
+        return 'http://localhost:3000/api/v1';
+      }
+      return '${Uri.base.origin}/api/v1';
+    }
+    const envApi = String.fromEnvironment('API_URL', defaultValue: '');
+    if (envApi.isNotEmpty) return envApi;
     try {
       if (Platform.isAndroid) {
-        // 10.0.2.2 maps to host machine localhost in Android Emulator
         return 'http://10.0.2.2:3000/api/v1';
       }
     } catch (_) {}
-    return 'http://localhost:3000/api/v1';
+    return 'https://toko-susilawati.legaltechz.com/api/v1';
   }
 
   Future<void> init() async {
