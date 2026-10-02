@@ -19,11 +19,6 @@ class ApiService {
     }
     const envApi = String.fromEnvironment('API_URL', defaultValue: '');
     if (envApi.isNotEmpty) return envApi;
-    try {
-      if (Platform.isAndroid) {
-        return 'http://10.0.2.2:3000/api/v1';
-      }
-    } catch (_) {}
     return 'https://toko-susilawati.legaltechz.com/api/v1';
   }
 
