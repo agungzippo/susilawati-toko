@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -216,5 +215,104 @@ class ApiService {
     }
     final err = jsonDecode(response.body);
     throw Exception(err['error'] ?? 'Gagal mencatat barang keluar');
+  }
+
+  // Upload Invoice Photo
+  Future<Map<String, dynamic>> uploadInvoiceImage(String filePath, {String? supplierId}) async {
+    final url = Uri.parse('$baseUrl/invoices/upload');
+    final request = http.MultipartRequest('POST', url);
+    request.headers.addAll(_headers());
+    request.files.add(await http.MultipartFile.fromPath('image', filePath));
+    if (supplierId != null && supplierId.isNotEmpty) {
+      request.fields['supplierId'] = supplierId;
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    final json = jsonDecode(response.body);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json['data'] as Map<String, dynamic>;
+    }
+    throw Exception(json['error'] ?? 'Gagal mengunggah foto faktur');
+  }
+
+  // Create Supplier
+  Future<Map<String, dynamic>> createSupplier(Map<String, dynamic> payload) async {
+    final url = Uri.parse('$baseUrl/suppliers');
+    final response = await http.post(
+      url,
+      headers: _headers(),
+      body: jsonEncode(payload),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body);
+      return json['data'] as Map<String, dynamic>;
+    }
+    final err = jsonDecode(response.body);
+    throw Exception(err['error'] ?? 'Gagal menambahkan suplier');
+  }
+
+  // Verify Invoice
+  Future<Map<String, dynamic>> verifyInvoice(String invoiceId, Map<String, dynamic> payload) async {
+    final url = Uri.parse('$baseUrl/invoices/$invoiceId/verify');
+    final response = await http.patch(
+      url,
+      headers: _headers(),
+      body: jsonEncode(payload),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body);
+      return json['data'] as Map<String, dynamic>;
+    }
+    final err = jsonDecode(response.body);
+    throw Exception(err['error'] ?? 'Gagal memverifikasi faktur');
+  }
+
+  // Create Schedule
+  Future<Map<String, dynamic>> createSchedule(Map<String, dynamic> payload) async {
+    final url = Uri.parse('$baseUrl/receipts/schedules');
+    final response = await http.post(
+      url,
+      headers: _headers(),
+      body: jsonEncode(payload),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body);
+      return json['data'] as Map<String, dynamic>;
+    }
+    final err = jsonDecode(response.body);
+    throw Exception(err['error'] ?? 'Gagal membuat jadwal kedatangan');
+  }
+
+  // Quick adjust / initial stock input
+  Future<void> addStock({required String variantId, required int quantity, required double unitCost}) async {
+    final url = Uri.parse('$baseUrl/inventory/initial-stock');
+    final response = await http.post(
+      url,
+      headers: _headers(),
+      body: jsonEncode({
+        'items': [
+          {
+            'variantId': variantId,
+            'quantity': quantity,
+            'unitCost': unitCost,
+          }
+        ]
+      }),
+    );
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      final err = jsonDecode(response.body);
+      throw Exception(err['error'] ?? 'Gagal memperbarui stok');
+    }
+  }
+
+  // Download CSV content
+  Future<String> getExportCsv() async {
+    final url = Uri.parse('$baseUrl/inventory/export-csv');
+    final response = await http.get(url, headers: _headers());
+    if (response.statusCode == 200) {
+      return response.body;
+    }
+    throw Exception('Gagal mengunduh laporan CSV');
   }
 }

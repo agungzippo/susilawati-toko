@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../core/theme.dart';
 import '../core/api_service.dart';
 import '../widgets/box_3d_icon.dart';
+import '../widgets/tactile_3d.dart';
 import 'incoming_screen.dart';
 import 'stock_out_screen.dart';
 
@@ -18,6 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
   bool _isLoading = true;
+  bool _hasError = false;
+  String _errorMessage = '';
   Map<String, dynamic>? _summary;
   List<dynamic> _transactions = [];
 
@@ -28,7 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final summary = await ApiService.instance.getSummary();
       final txs = await ApiService.instance.getRecentTransactions(limit: 5);
@@ -40,8 +46,14 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+      }
     }
   }
 
@@ -121,26 +133,47 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 20),
 
+                    if (_hasError) ...[
+                      Tactile3DCard(
+                        backgroundColor: const Color(0xFFFDF2F2),
+                        customBorder: Border.all(color: AppColors.redStock.withValues(alpha: 0.3)),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.cloud_off_rounded, color: AppColors.redStock, size: 28),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Gagal Memuat Data Backend', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.redStock)),
+                                  Text(_errorMessage.isNotEmpty ? _errorMessage : 'Periksa koneksi internet Anda', style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.refresh_rounded, color: AppColors.redStock),
+                              onPressed: _loadData,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
                     // 2. Kartu Highlight Utama (Total Stok & Nilai Persediaan)
                     Row(
                       children: [
-                        // Card 1: Total Stok
+                        // Card 1: Total Stok (3D Tactile)
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.cardWhite,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: AppColors.borderWarm),
-                              boxShadow: AppColors.shadow3D,
-                            ),
+                          child: Tactile3DCard(
+                            isElevated: true,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Box3DIcon(size: 38),
                                 const SizedBox(height: 12),
                                 const Text(
-                                  'Total Stok',
+                                  'Total Stok Fisik',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textMuted,
@@ -153,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   textBaseline: TextBaseline.alphabetic,
                                   children: [
                                     Text(
-                                      '${_summary?['totalUnits'] ?? 248}',
+                                      '${_summary?['totalUnits'] ?? 0}',
                                       style: const TextStyle(
                                         fontSize: 26,
                                         fontWeight: FontWeight.bold,
@@ -176,33 +209,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 14),
 
-                        // Card 2: Nilai Persediaan
+                        // Card 2: Nilai Persediaan (3D Tactile)
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.cardWhite,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: AppColors.borderWarm),
-                              boxShadow: AppColors.shadow3D,
-                            ),
+                          child: Tactile3DCard(
+                            isElevated: true,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  'Nilai Persediaan',
+                                  'Nilai Modal Stok',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textMuted,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 16),
                                 Text(
-                                  _currency.format(_summary?['totalCostValue'] ?? 18750000),
+                                  _currency.format(_summary?['totalCostValue'] ?? 0),
                                   style: const TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.textDark,
                                   ),
@@ -231,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           title: 'Barang Masuk',
                           icon: Icons.arrow_upward_rounded,
                           iconColor: AppColors.greenStock,
-                          value: '${_summary?['itemsInToday'] ?? 12}',
+                          value: '${_summary?['itemsInToday'] ?? 0}',
                           suffix: 'item',
                         ),
                         const SizedBox(width: 10),
@@ -239,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           title: 'Barang Keluar',
                           icon: Icons.arrow_downward_rounded,
                           iconColor: AppColors.redStock,
-                          value: '${_summary?['itemsOutToday'] ?? 8}',
+                          value: '${_summary?['itemsOutToday'] ?? 0}',
                           suffix: 'item',
                         ),
                         const SizedBox(width: 10),
@@ -247,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           title: 'Total Transaksi',
                           icon: Icons.receipt_long_outlined,
                           iconColor: AppColors.brandWarm,
-                          value: '${_summary?['transactionsToday'] ?? 5}',
+                          value: '${_summary?['transactionsToday'] ?? 0}',
                           suffix: 'hari ini',
                         ),
                       ],
@@ -587,22 +614,43 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Ekspor Laporan'),
-        content: const Text('Unduh laporan stok toko terkini dalam format CSV untuk pembukuan Excel?'),
+        title: const Row(
+          children: [
+            Icon(Icons.description_outlined, color: AppColors.brandEspresso),
+            SizedBox(width: 8),
+            Text('Ekspor Laporan CSV'),
+          ],
+        ),
+        content: const Text('Unduh laporan stok toko terkini dalam format CSV langsung dari server untuk pembukuan Excel?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandEspresso),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Laporan CSV siap diunduh dari server via /api/v1/inventory/export-csv'),
-                  backgroundColor: AppColors.greenStock,
-                ),
-              );
+              try {
+                final csv = await ApiService.instance.getExportCsv();
+                final lineCount = csv.split('\n').length;
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Laporan CSV berhasil diunduh ($lineCount baris data)!'),
+                      backgroundColor: AppColors.greenStock,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Gagal unduh: $e'),
+                      backgroundColor: AppColors.redStock,
+                    ),
+                  );
+                }
+              }
             },
-            child: const Text('Ekspor CSV'),
+            child: const Text('Unduh CSV'),
           ),
         ],
       ),

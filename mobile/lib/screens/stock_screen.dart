@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../core/theme.dart';
 import '../core/api_service.dart';
 import '../widgets/bag_3d_graphic.dart';
+import '../widgets/tactile_3d.dart';
 import 'product_detail_screen.dart';
 
 class StockScreen extends StatefulWidget {
@@ -185,11 +186,13 @@ class _StockScreenState extends State<StockScreen> {
                             final variants = (p['variants'] as List? ?? []);
                             final v = variants.isNotEmpty ? variants[0] : {};
                             final balances = (v['stockBalances'] as List? ?? []);
-                            final stock = balances.isNotEmpty ? (balances[0]['quantityOnHand'] as int? ?? 0) : 15;
-                            final cost = double.tryParse(balances.isNotEmpty ? balances[0]['averageCost']?.toString() ?? '185000' : '185000') ?? 185000;
-                            final selling = double.tryParse(v['referenceSellingPrice']?.toString() ?? '285000') ?? 285000;
+                            final stock = balances.isNotEmpty ? (balances[0]['quantityOnHand'] as int? ?? 0) : 0;
+                            final cost = double.tryParse(balances.isNotEmpty ? balances[0]['averageCost']?.toString() ?? '0' : '0') ?? 0;
+                            final selling = double.tryParse(v['referenceSellingPrice']?.toString() ?? '0') ?? 0;
 
-                            return GestureDetector(
+                            return Tactile3DCard(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -198,23 +201,14 @@ class _StockScreenState extends State<StockScreen> {
                                   ),
                                 ).then((_) => _loadProducts());
                               },
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.cardWhite,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: AppColors.borderWarm),
-                                  boxShadow: AppColors.shadow3D,
-                                ),
-                                child: Row(
-                                  children: [
-                                    // 3D Bag Thumbnail
-                                    Bag3DGraphic(
-                                      bagType: p['name'] ?? 'tote',
-                                      width: 60,
-                                      height: 60,
-                                    ),
+                              child: Row(
+                                children: [
+                                  // 3D Bag Thumbnail
+                                  Bag3DGraphic(
+                                    bagType: p['name'] ?? 'tote',
+                                    width: 60,
+                                    height: 60,
+                                  ),
                                     const SizedBox(width: 12),
 
                                     // Title, SKU, Green Stock Dot
@@ -294,7 +288,6 @@ class _StockScreenState extends State<StockScreen> {
                                     ),
                                   ],
                                 ),
-                              ),
                             );
                           },
                         ),

@@ -31,27 +31,77 @@ class AppColors {
   static const Color warning = amberStock;
   static const Color accent = brandWarm;
 
-  // Bayangan 3D Lembut
+  // Bayangan 3D Lembut & Kedalaman Fisik (UI/UX Pro Max)
   static List<BoxShadow> get shadow3D => [
         BoxShadow(
-          color: const Color(0xFF3D2F28).withValues(alpha: 0.05),
-          blurRadius: 14,
-          offset: const Offset(0, 4),
+          color: const Color(0xFF261D17).withValues(alpha: 0.08),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
         ),
         BoxShadow(
-          color: const Color(0xFF3D2F28).withValues(alpha: 0.02),
+          color: const Color(0xFF261D17).withValues(alpha: 0.03),
           blurRadius: 4,
           offset: const Offset(0, 1),
         ),
       ];
 
-  static List<BoxShadow> get buttonShadow3D => [
+  static List<BoxShadow> get shadow3DElevated => [
         BoxShadow(
-          color: const Color(0xFF3D2F28).withValues(alpha: 0.2),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
+          color: const Color(0xFF261D17).withValues(alpha: 0.12),
+          blurRadius: 22,
+          offset: const Offset(0, 10),
+        ),
+        BoxShadow(
+          color: const Color(0xFF261D17).withValues(alpha: 0.04),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
         ),
       ];
+
+  static List<BoxShadow> get buttonShadow3D => [
+        BoxShadow(
+          color: const Color(0xFF1E1612),
+          offset: const Offset(0, 4),
+          blurRadius: 0,
+        ),
+        BoxShadow(
+          color: const Color(0xFF3D2F28).withValues(alpha: 0.25),
+          blurRadius: 12,
+          offset: const Offset(0, 6),
+        ),
+      ];
+
+  static List<BoxShadow> get buttonShadow3DPressed => [
+        BoxShadow(
+          color: const Color(0xFF1E1612),
+          offset: const Offset(0, 1),
+          blurRadius: 0,
+        ),
+        BoxShadow(
+          color: const Color(0xFF3D2F28).withValues(alpha: 0.15),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+      ];
+
+  // Gradien Lembut Permukaan 3D (Cushion / Leather Sheen)
+  static const LinearGradient cardGradient3D = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0xFFFFFFFF),
+      Color(0xFFFAF7F3),
+    ],
+  );
+
+  static const LinearGradient espressoGradient3D = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF4A3B32),
+      Color(0xFF32251F),
+    ],
+  );
 }
 
 class AppTheme {
