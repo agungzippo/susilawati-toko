@@ -11,8 +11,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'owner@susilawati.com');
-  final _passwordController = TextEditingController(text: 'admin123');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String? _errorMessage;
@@ -172,33 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : const Text('Masuk ke Sistem'),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Quick demo switch
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _emailController.text = 'owner@susilawati.com';
-                              _passwordController.text = 'admin123';
-                            });
-                          },
-                          child: const Text('Akun Pemilik'),
-                        ),
-                        const Text('•', style: TextStyle(color: AppColors.mutedForeground)),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _emailController.text = 'staf@susilawati.com';
-                              _passwordController.text = 'staf123';
-                            });
-                          },
-                          child: const Text('Akun Staf'),
-                        ),
-                      ],
                     ),
                   ],
                 ),
