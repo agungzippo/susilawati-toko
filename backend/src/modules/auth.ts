@@ -9,7 +9,7 @@ if (JWT_SECRET.length < 32) throw new Error("JWT_SECRET wajib diisi (min 32 kara
 
 export type AppEnv = { Variables: { storeId: string; user: { sub: string; role: string; name: string; email: string } } };
 
-export const authRouter = new Hono();
+export const authRouter = new Hono<AppEnv>();
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -93,6 +93,24 @@ authRouter.get("/me", async (c) => {
   } catch {
     return c.json({ error: "Token kadaluarsa atau tidak valid" }, 401);
   }
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+});
+
+authRouter.post("/change-password", requireAuth, zValidator("json", changePasswordSchema), async (c) => {
+  const { currentPassword, newPassword } = c.req.valid("json");
+  const user = await prisma.user.findUnique({ where: { id: c.get("user").sub } });
+  if (!user || !user.isActive || !(await Bun.password.verify(currentPassword, user.passwordHash))) {
+    return c.json({ error: "Kata sandi saat ini salah" }, 401);
+  }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await Bun.password.hash(newPassword, { algorithm: "argon2id" }) },
+  });
+  return c.json({ ok: true });
 });
 
 // Middleware for protected routes

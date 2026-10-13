@@ -60,6 +60,17 @@ class ApiService {
     }
   }
 
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/change-password'),
+      headers: _headers(),
+      body: jsonEncode({'currentPassword': currentPassword, 'newPassword': newPassword}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(jsonDecode(response.body)['error'] ?? 'Gagal mengubah kata sandi');
+    }
+  }
+
   Future<void> logout() async {
     _token = null;
     final prefs = await SharedPreferences.getInstance();

@@ -58,6 +58,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _changePassword() async {
+    final current = TextEditingController();
+    final next = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        String? error;
+        return StatefulBuilder(
+          builder: (ctx, setS) => AlertDialog(
+            title: const Text('Ubah Kata Sandi'),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: current,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: 'Kata sandi saat ini'),
+                    validator: (v) => (v ?? '').isEmpty ? 'Wajib diisi' : null,
+                  ),
+                  TextFormField(
+                    controller: next,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: 'Kata sandi baru (min 8 karakter)'),
+                    validator: (v) => (v ?? '').length < 8 ? 'Minimal 8 karakter' : null,
+                  ),
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(error!, style: const TextStyle(color: AppColors.destructive)),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(minimumSize: const Size(80, 40)),
+                onPressed: () async {
+                  if (!formKey.currentState!.validate()) return;
+                  try {
+                    await ApiService.instance.changePassword(current.text, next.text);
+                    if (ctx.mounted) Navigator.pop(ctx, true);
+                  } catch (e) {
+                    setS(() => error = e.toString().replaceFirst('Exception: ', ''));
+                  }
+                },
+                child: const Text('Simpan'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (ok == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kata sandi berhasil diubah')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,6 +196,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 28),
+
+          OutlinedButton.icon(
+            onPressed: _changePassword,
+            icon: const Icon(Icons.lock_reset, size: 20),
+            label: const Text('Ubah Kata Sandi'),
+          ),
+          const SizedBox(height: 12),
 
           // Tombol Logout
           OutlinedButton.icon(
