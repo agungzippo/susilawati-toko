@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "../db.js";
-import { requireAuth } from "./auth.js";
+import { requireAuth, type AppEnv } from "./auth.js";
 
 export function calculateAverageCost(
   oldStock: number,
@@ -17,7 +17,7 @@ export function calculateAverageCost(
   return Math.round((totalValue / totalQty) * 100) / 100;
 }
 
-export const inventoryRouter = new Hono();
+export const inventoryRouter = new Hono<AppEnv>();
 
 inventoryRouter.use("*", requireAuth);
 

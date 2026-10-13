@@ -2,11 +2,11 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "../db.js";
-import { requireAuth } from "./auth.js";
+import { requireAuth, type AppEnv } from "./auth.js";
 import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
-export const invoicesRouter = new Hono();
+export const invoicesRouter = new Hono<AppEnv>();
 
 invoicesRouter.use("*", requireAuth);
 
@@ -159,7 +159,7 @@ invoicesRouter.post("/:id/extract", async (c) => {
       );
 
       if (res.ok) {
-        const json = await res.json();
+        const json: any = await res.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) {
           extractedData = JSON.parse(text);

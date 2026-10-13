@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "../db.js";
-import { requireAuth } from "./auth.js";
+import { requireAuth, type AppEnv } from "./auth.js";
 
-export const stockChecksRouter = new Hono();
+export const stockChecksRouter = new Hono<AppEnv>();
 
 stockChecksRouter.use("*", requireAuth);
 
