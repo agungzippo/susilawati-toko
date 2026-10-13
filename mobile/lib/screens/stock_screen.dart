@@ -73,6 +73,7 @@ class _StockScreenState extends State<StockScreen> {
         title: const Text('Stok Barang'),
         leading: widget.showBackButton
             ? IconButton(
+                tooltip: "Kembali",
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                 onPressed: () => Navigator.pop(context),
               )
@@ -228,7 +229,7 @@ class _StockScreenState extends State<StockScreen> {
                                           Text(
                                             'SKU: ${v['sku'] ?? 'TT001'}',
                                             style: const TextStyle(
-                                              fontSize: 11,
+                                              fontSize: 12,
                                               color: AppColors.textMuted,
                                             ),
                                           ),
@@ -247,7 +248,7 @@ class _StockScreenState extends State<StockScreen> {
                                               Text(
                                                 'Stok $stock pcs',
                                                 style: const TextStyle(
-                                                  fontSize: 11,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.w600,
                                                   color: AppColors.greenStock,
                                                 ),
@@ -265,7 +266,7 @@ class _StockScreenState extends State<StockScreen> {
                                         Text(
                                           'Jual ${_currency.format(selling)}',
                                           style: const TextStyle(
-                                            fontSize: 11,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             color: AppColors.textDark,
                                           ),
@@ -274,7 +275,7 @@ class _StockScreenState extends State<StockScreen> {
                                         Text(
                                           'Modal ${_currency.format(cost)}',
                                           style: const TextStyle(
-                                            fontSize: 10,
+                                            fontSize: 12,
                                             color: AppColors.textMuted,
                                           ),
                                         ),

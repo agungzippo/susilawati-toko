@@ -184,7 +184,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Varian & Ukuran', style: TextStyle(fontSize: 11, color: AppColors.mutedForeground)),
+                      const Text('Varian & Ukuran', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
                       Text(
                         '${variant['color'] ?? 'Default'} / ${variant['size'] ?? 'All Size'}',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -197,12 +197,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text('Stok Saat Ini', style: TextStyle(fontSize: 11, color: AppColors.mutedForeground)),
+                    const Text('Stok Saat Ini', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
                     Text(
                       '$stock pcs',
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: badgeColor),
                     ),
-                    Text('Batas Min: $minStock pcs', style: const TextStyle(fontSize: 11, color: AppColors.mutedForeground)),
+                    Text('Batas Min: $minStock pcs', style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
                   ],
                 ),
               ],
@@ -222,7 +222,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Harga Jual Acuan', style: TextStyle(fontSize: 11, color: AppColors.mutedForeground)),
+                      const Text('Harga Jual Acuan', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
                       Text(
                         _currency.format(double.tryParse(selling.toString()) ?? 0),
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
@@ -232,7 +232,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text('Modal Rata-Rata', style: TextStyle(fontSize: 11, color: AppColors.mutedForeground)),
+                      const Text('Modal Rata-Rata', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
                       Text(
                         _currency.format(double.tryParse(cost.toString()) ?? 0),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.mutedForeground),
@@ -263,10 +263,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
         backgroundColor: Colors.black,
         actions: [
           IconButton(
+            tooltip: "Senter",
             icon: const Icon(Icons.flash_on),
             onPressed: () => _controller.toggleTorch(),
           ),
           IconButton(
+            tooltip: "Balik kamera",
             icon: const Icon(Icons.flip_camera_ios),
             onPressed: () => _controller.switchCamera(),
           ),

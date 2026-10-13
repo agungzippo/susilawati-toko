@@ -104,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Text(
                             _user?['role'] == 'OWNER' ? 'PEMILIK TOKO' : 'STAF TOKO',
-                            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11),
+                            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12),
                           ),
                         ),
                       ],

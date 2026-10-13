@@ -4,7 +4,8 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "../db.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "toko-susilawati-secret-jwt-key-2026";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) throw new Error("JWT_SECRET wajib diisi (min 32 karakter)");
 
 export const authRouter = new Hono();
 

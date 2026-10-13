@@ -9,6 +9,7 @@ import { inventoryRouter } from "./modules/inventory.js";
 import { invoicesRouter } from "./modules/invoices.js";
 import { receiptsRouter } from "./modules/receipts.js";
 import { stockChecksRouter } from "./modules/stock_checks.js";
+import { requireAuth } from "./modules/auth.js";
 import { join } from "path";
 
 const app = new Hono();
@@ -18,7 +19,7 @@ app.use("*", logger());
 app.use(
   "*",
   cors({
-    origin: "*",
+    origin: process.env.CORS_ORIGIN || "https://toko-susilawati.legaltechz.com",
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
   })
@@ -34,7 +35,7 @@ app.get("/health", (c) => {
 });
 
 // Static uploads serving (pure native Bun)
-app.get("/uploads/:filename", async (c) => {
+app.get("/uploads/:filename", requireAuth, async (c) => {
   const filename = c.req.param("filename");
   const file = Bun.file(join("./uploads", filename));
   if (!(await file.exists())) return c.notFound();

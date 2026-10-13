@@ -31,8 +31,9 @@ async function main() {
   });
 
   // 3. Pengguna
-  const ownerPasswordHash = await Bun.password.hash("admin123", { algorithm: "argon2id" });
-  const staffPasswordHash = await Bun.password.hash("staf123", { algorithm: "argon2id" });
+  const ownerPassword = process.env.OWNER_PASSWORD;
+  if (!ownerPassword || ownerPassword.length < 8) throw new Error("OWNER_PASSWORD wajib diisi (min 8 karakter)");
+  const ownerPasswordHash = await Bun.password.hash(ownerPassword, { algorithm: "argon2id" });
 
   const owner = await prisma.user.upsert({
     where: { email: "owner@susilawati.com" },
@@ -46,17 +47,8 @@ async function main() {
     update: { passwordHash: ownerPasswordHash },
   });
 
-  await prisma.user.upsert({
-    where: { email: "staf@susilawati.com" },
-    create: {
-      storeId: store.id,
-      name: "Staf Toko",
-      email: "staf@susilawati.com",
-      passwordHash: staffPasswordHash,
-      role: "STAFF",
-    },
-    update: { passwordHash: staffPasswordHash },
-  });
+  // Pemakaian pribadi: akun staf bawaan (password publik di repo) dinonaktifkan
+  await prisma.user.updateMany({ where: { email: "staf@susilawati.com" }, data: { isActive: false } });
 
   // 4. Kategori Produk
   const categories = ["Tas Tote", "Shoulder Bag", "Backpack", "Tas Selempang", "Tas Ransel"];

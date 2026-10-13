@@ -201,12 +201,14 @@ class _SupplierScreenState extends State<SupplierScreen> {
         title: const Text('Suplier Toko'),
         leading: widget.showBackButton
             ? IconButton(
+                tooltip: "Kembali",
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                 onPressed: () => Navigator.pop(context),
               )
             : null,
         actions: [
           IconButton(
+            tooltip: "Tambah suplier",
             icon: const Icon(Icons.add_circle_outline_rounded, size: 26, color: AppColors.brandEspresso),
             onPressed: _showAddSupplierDialog,
           ),
@@ -313,7 +315,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   s['phone'],
-                                                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                                 ),
                                               ],
                                             ),
@@ -326,7 +328,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                                                 Expanded(
                                                   child: Text(
                                                     s['address'],
-                                                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                                    style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                   ),

@@ -305,7 +305,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       appBar: AppBar(
         title: const Text('Hasil Pemindaian Bon'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          tooltip: "Kembali",
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -334,7 +335,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       children: [
                         Text('Foto Bon Terlampir', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         SizedBox(height: 2),
-                        Text('Data telah diekstrak dengan Gemini Vision AI', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                        Text('Data faktur hasil ekstraksi otomatis', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -385,7 +386,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       'Daftar Barang',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark),
                     ),
-                    Text('Ketuk item untuk ubah varian', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                    Text('Ketuk item untuk ubah varian', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -393,10 +394,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                 // Table Header
                 Row(
                   children: const [
-                    Expanded(flex: 3, child: Text('Nama Barang', style: TextStyle(fontSize: 11, color: AppColors.textMuted))),
-                    Expanded(flex: 1, child: Text('Qty', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: AppColors.textMuted))),
-                    Expanded(flex: 2, child: Text('Harga Modal', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, color: AppColors.textMuted))),
-                    Expanded(flex: 2, child: Text('Subtotal', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, color: AppColors.textMuted))),
+                    Expanded(flex: 3, child: Text('Nama Barang', style: TextStyle(fontSize: 12, color: AppColors.textMuted))),
+                    Expanded(flex: 1, child: Text('Qty', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.textMuted))),
+                    Expanded(flex: 2, child: Text('Harga Modal', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, color: AppColors.textMuted))),
+                    Expanded(flex: 2, child: Text('Subtotal', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, color: AppColors.textMuted))),
                   ],
                 ),
                 const Divider(height: 16, color: AppColors.borderWarm),
@@ -436,7 +437,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                                 child: Text(
                                   _currency.format(it['unitCost']),
                                   textAlign: TextAlign.right,
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                 ),
                               ),
                               Expanded(
@@ -457,7 +458,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                                 const SizedBox(width: 4),
                                 Text(
                                   'Tersambung ke: $matchedName',
-                                  style: const TextStyle(fontSize: 10, color: AppColors.greenStock, fontWeight: FontWeight.w500),
+                                  style: const TextStyle(fontSize: 12, color: AppColors.greenStock, fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ),
@@ -510,7 +511,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
         const SizedBox(height: 2),
         Text(
           value,

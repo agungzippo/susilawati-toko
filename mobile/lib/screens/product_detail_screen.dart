@@ -105,7 +105,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       appBar: AppBar(
         title: const Text('Detail Barang'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          tooltip: "Kembali",
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -171,7 +172,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         style: TextStyle(
                           color: currentStock > 5 ? AppColors.greenStock : (currentStock > 0 ? AppColors.amberStock : AppColors.redStock),
                           fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -247,7 +248,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Stok Fisik Tersedia', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                          const Text('Stok Fisik Tersedia', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                           Text(
                             '$currentStock pcs',
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
@@ -270,8 +271,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               }
                             },
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              child: Icon(Icons.remove, size: 16),
+                              padding: EdgeInsets.all(14),
+                              child: Icon(Icons.remove, size: 20),
                             ),
                           ),
                           Padding(
@@ -288,8 +289,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           InkWell(
                             onTap: () => setState(() => _adjustCount++),
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              child: Icon(Icons.add, size: 16),
+                              padding: EdgeInsets.all(14),
+                              child: Icon(Icons.add, size: 20),
                             ),
                           ),
                         ],

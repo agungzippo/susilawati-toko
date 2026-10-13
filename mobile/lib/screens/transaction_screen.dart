@@ -115,7 +115,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                               SizedBox(height: 2),
                               Text(
                                 'Scan Bon Faktur',
-                                style: TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                               ),
                             ],
                           ),
@@ -172,7 +172,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                               SizedBox(height: 2),
                               Text(
                                 'Catat Penjualan',
-                                style: TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                               ),
                             ],
                           ),
@@ -293,12 +293,12 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                         const SizedBox(height: 2),
                                         Text(
                                           '${tx['productName']} (${tx['quantity']} pcs)',
-                                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
                                           formattedDate,
-                                          style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                         ),
                                       ],
                                     ),

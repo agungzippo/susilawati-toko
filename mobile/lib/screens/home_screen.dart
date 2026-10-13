@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text('Gagal Memuat Data Backend', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.redStock)),
-                                  Text(_errorMessage.isNotEmpty ? _errorMessage : 'Periksa koneksi internet Anda', style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                  Text(_errorMessage.isNotEmpty ? _errorMessage : 'Periksa koneksi internet Anda', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                                 ],
                               ),
                             ),
@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   'Potensi Omset: ${_currency.format(_summary?['totalSellingValue'] ?? 0)}',
-                                  style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -418,11 +418,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       '${tx['productName']} (${tx['quantity']} pcs)',
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                      style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                     ),
                                     Text(
                                       formattedDate,
-                                      style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                      style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                     ),
                                   ],
                                 ),
@@ -469,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w500),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -485,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 2),
                 Text(
                   suffix,
-                  style: const TextStyle(fontSize: 9, color: AppColors.textMuted),
+                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -528,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
                 ),

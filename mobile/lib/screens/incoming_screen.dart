@@ -194,6 +194,7 @@ class _IncomingScreenState extends State<IncomingScreen> with SingleTickerProvid
         title: const Text('Barang Masuk'),
         leading: widget.showBackButton
             ? IconButton(
+                tooltip: "Kembali",
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                 onPressed: () => Navigator.pop(context),
               )
@@ -326,7 +327,7 @@ class _IncomingScreenState extends State<IncomingScreen> with SingleTickerProvid
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white54,
-                                fontSize: 11,
+                                fontSize: 12,
                                 height: 1.4,
                               ),
                             ),

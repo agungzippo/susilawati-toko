@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?isi di .env}
       POSTGRES_DB: ${POSTGRES_DB:-toko_susilawati}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -24,8 +24,9 @@ services:
     container_name: toko-susilawati-api
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgrespassword}@postgres:5432/${POSTGRES_DB:-toko_susilawati}?schema=public
-      JWT_SECRET: ${JWT_SECRET:-toko-susilawati-production-secret-2026}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?isi di .env}@postgres:5432/${POSTGRES_DB:-toko_susilawati}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?isi di .env}
+      OWNER_PASSWORD: ${OWNER_PASSWORD:?isi di .env}
       PORT: 3000
       UPLOAD_DIR: ./uploads
     ports:

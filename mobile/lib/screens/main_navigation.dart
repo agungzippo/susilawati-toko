@@ -51,8 +51,8 @@ class _MainNavigationState extends State<MainNavigation> {
           backgroundColor: Colors.white,
           selectedItemColor: AppColors.brandEspresso,
           unselectedItemColor: AppColors.textMuted,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-          unselectedLabelStyle: const TextStyle(fontSize: 11),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
           elevation: 0,
           items: const [
             BottomNavigationBarItem(

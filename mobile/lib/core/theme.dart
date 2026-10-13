@@ -13,7 +13,7 @@ class AppColors {
 
   // Warna Teks
   static const Color textDark = Color(0xFF1F1915); // Hitam pekat elegan
-  static const Color textMuted = Color(0xFF8C7E76); // Abu-abu taupe
+  static const Color textMuted = Color(0xFF6B5E56); // Taupe gelap, kontras 5.6:1 di atas latar
 
   // Aksen Status
   static const Color greenStock = Color(0xFF2E7D32); // Hijau stok aman

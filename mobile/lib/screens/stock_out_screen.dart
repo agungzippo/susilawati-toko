@@ -164,7 +164,7 @@ class _StockOutScreenState extends State<StockOutScreen> {
                             child: ListTile(
                               leading: Bag3DGraphic(bagType: p['name'] ?? 'tote', width: 44, height: 44),
                               title: Text('${p['name']} (${v['color'] ?? 'Default'})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                              subtitle: Text('Stok: $stock pcs | ${_currency.format(price)}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                              subtitle: Text('Stok: $stock pcs | ${_currency.format(price)}', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                               trailing: IconButton(
                                 icon: Icon(
                                   isSelected ? Icons.check_circle_rounded : Icons.add_circle_outline_rounded,
@@ -258,7 +258,8 @@ class _StockOutScreenState extends State<StockOutScreen> {
       appBar: AppBar(
         title: const Text('Barang Keluar (Penjualan)'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          tooltip: "Kembali",
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -387,7 +388,7 @@ class _StockOutScreenState extends State<StockOutScreen> {
                                 const SizedBox(height: 2),
                                 Text(
                                   'Stok $stock pcs  |  ${_currency.format(price)}',
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                                 ),
                               ],
                             ),
@@ -419,8 +420,8 @@ class _StockOutScreenState extends State<StockOutScreen> {
                                     });
                                   },
                                   child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                    child: Icon(Icons.remove, size: 16),
+                                    padding: EdgeInsets.all(14),
+                                    child: Icon(Icons.remove, size: 20),
                                   ),
                                 ),
                                 Padding(
@@ -441,8 +442,8 @@ class _StockOutScreenState extends State<StockOutScreen> {
                                     }
                                   },
                                   child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                    child: Icon(Icons.add, size: 16),
+                                    padding: EdgeInsets.all(14),
+                                    child: Icon(Icons.add, size: 20),
                                   ),
                                 ),
                               ],
