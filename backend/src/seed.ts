@@ -44,7 +44,7 @@ async function main() {
       passwordHash: ownerPasswordHash,
       role: "OWNER",
     },
-    update: { passwordHash: ownerPasswordHash },
+    update: {}, // jangan timpa password yang sudah diubah pemilik
   });
 
   // Pemakaian pribadi: akun staf bawaan (password publik di repo) dinonaktifkan
